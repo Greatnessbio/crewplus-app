@@ -20,13 +20,20 @@ class InternetSearchTool(BaseTool):
 
 st.title("PraisonAI Agent Creator")
 
-# User inputs (same as before)
-...
+# User inputs
+openai_api_key = st.text_input("Enter your OpenAI API Key", type="password")
+topic = st.text_input("Topic", "Biotech Startup Funding")
+role = st.text_input("Role", "Biotech Investment Researcher")
+goal = st.text_area("Goal", "Identify and analyze recently funded biotech startups in {topic}")
+backstory = st.text_area("Backstory", "You are a sharp-eyed financial analyst specializing in the biotech sector, with a keen interest in tracking startup funding and company developments.")
+task_description = st.text_area("Task Description", "Investigate and compile information about biotech startups that have received significant funding in July 2024.")
+expected_output = st.text_area("Expected Output", "A detailed report on recently funded biotech startups, including company names, funding amounts, investors, date funding received, contacts from about us page, and the startups' focus areas within biotechnology.")
 
 if st.button("Run PraisonAI"):
     if not openai_api_key:
         st.error("Please enter your OpenAI API Key")
     else:
+        # Set the API key
         os.environ["OPENAI_API_KEY"] = openai_api_key
         
         agent_yaml = f"""
