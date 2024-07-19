@@ -2,6 +2,20 @@ import streamlit as st
 import os
 import yaml
 from praisonai import PraisonAI
+import logging
+
+# Configure logging
+logging.basicConfig(level=logging.INFO)
+logger = logging.getLogger(__name__)
+
+def run_praisonai(agent_yaml):
+    try:
+        praisonai = PraisonAI(agent_yaml=agent_yaml)
+        result = praisonai.run()
+        return result
+    except Exception as e:
+        logger.error(f"Error running PraisonAI: {str(e)}")
+        return None
 
 st.title("PraisonAI Agent Creator")
 
@@ -20,7 +34,7 @@ if st.button("Run PraisonAI"):
     else:
         # Set the API key
         os.environ["OPENAI_API_KEY"] = openai_api_key
-
+        
         # Construct agent_yaml from user inputs
         agent_yaml = f"""
         framework: "crewai"
@@ -37,17 +51,17 @@ if st.button("Run PraisonAI"):
             tools:
               - "InternetSearchTool"
         """
-
-        # Create a PraisonAI instance with the agent_yaml content
-        praisonai = PraisonAI(agent_yaml=agent_yaml)
-
+        
         # Run PraisonAI
         with st.spinner("Running PraisonAI... This may take a few minutes."):
-            result = praisonai.run()
-
+            result = run_praisonai(agent_yaml)
+        
         # Display the result
-        st.subheader("PraisonAI Output")
-        st.write(result)
+        if result:
+            st.subheader("PraisonAI Output")
+            st.write(result)
+        else:
+            st.error("An error occurred while running PraisonAI. Please check the logs for more information.")
 
 # Display PraisonAI version
 import praisonai
