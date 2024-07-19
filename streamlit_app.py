@@ -2,20 +2,16 @@ import streamlit as st
 import os
 import yaml
 from praisonai import PraisonAI
-import logging
+from praisonai_tools import BaseTool
+from duckduckgo_search import DDGS
 
-# Configure logging
-logging.basicConfig(level=logging.INFO)
-logger = logging.getLogger(__name__)
-
-def run_praisonai(agent_yaml):
-    try:
-        praisonai = PraisonAI(agent_yaml=agent_yaml)
-        result = praisonai.run()
-        return result
-    except Exception as e:
-        logger.error(f"Error running PraisonAI: {str(e)}")
-        return None
+class InternetSearchTool(BaseTool):
+    name: str = "InternetSearchTool"
+    description: str = "Search Internet for relevant information based on a query or latest news"
+    def _run(self, query: str):
+        ddgs = DDGS()
+        results = ddgs.text(keywords=query, region='wt-wt', safesearch='moderate', max_results=5)
+        return results
 
 st.title("PraisonAI Agent Creator")
 
@@ -52,16 +48,16 @@ if st.button("Run PraisonAI"):
               - "InternetSearchTool"
         """
         
+        # Create a PraisonAI instance with the agent_yaml content
+        praisonai = PraisonAI(agent_yaml=agent_yaml)
+        
         # Run PraisonAI
         with st.spinner("Running PraisonAI... This may take a few minutes."):
-            result = run_praisonai(agent_yaml)
+            result = praisonai.run()
         
         # Display the result
-        if result:
-            st.subheader("PraisonAI Output")
-            st.write(result)
-        else:
-            st.error("An error occurred while running PraisonAI. Please check the logs for more information.")
+        st.subheader("PraisonAI Output")
+        st.write(result)
 
 # Display PraisonAI version
 import praisonai
