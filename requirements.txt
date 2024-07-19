@@ -2,3 +2,4 @@ streamlit
 praisonai 
 duckduckgo_search 
 pyyaml
+pysqlite3-binary
