@@ -44,32 +44,72 @@ class InternetSearchTool(BaseTool):
         results = ddgs.text(keywords=query, region='wt-wt', safesearch='moderate', max_results=5)
         return results
 
+# Template configurations
+templates = {
+    "Biotech Startup Funding": {
+        "topic": "Biotech Startup Funding",
+        "role_name": "biotech_analyst",
+        "role_title": "Biotech Investment Researcher",
+        "role_goal": "Identify and analyze recently funded biotech startups in {topic}",
+        "role_backstory": "You are a sharp-eyed financial analyst specializing in the biotech sector, with a keen interest in tracking startup funding and company developments.",
+        "task_name": "research_funded_startups",
+        "task_description": "Investigate and compile information about biotech startups that have received significant funding in July 2024.",
+        "task_expected_output": "A detailed report on recently funded biotech startups, including company names, funding amounts, investors, date funding received, contacts from about us page, and the startups' focus areas within biotechnology.",
+        "tools": ["InternetSearchTool"]
+    },
+    "Space Exploration": {
+        "topic": "Space Exploration",
+        "role_name": "astronomer",
+        "role_title": "Space Researcher",
+        "role_goal": "Discover new insights about {topic}",
+        "role_backstory": "You are a curious and dedicated astronomer with a passion for unraveling the mysteries of the cosmos.",
+        "task_name": "investigate_exoplanets",
+        "task_description": "Research and compile information about exoplanets discovered in the last decade.",
+        "task_expected_output": "A summarized report on exoplanet discoveries, including their size, potential habitability, and distance from Earth.",
+        "tools": ["InternetSearchTool"]
+    },
+    "Custom": {
+        "topic": "",
+        "role_name": "",
+        "role_title": "",
+        "role_goal": "",
+        "role_backstory": "",
+        "task_name": "",
+        "task_description": "",
+        "task_expected_output": "",
+        "tools": []
+    }
+}
+
 st.title("Universal PraisonAI Agent Creator")
 
 # OpenAI API Key input
 openai_api_key = st.text_input("Enter your OpenAI API Key", type="password")
 
+# Template selection
+selected_template = st.selectbox("Select a template or create custom", list(templates.keys()))
+
 # Agent Configuration
 st.header("Agent Configuration")
 framework = st.selectbox("Framework", ["crewai", "other_framework"])
-topic = st.text_input("Topic", "Custom Agent Topic")
+topic = st.text_input("Topic", value=templates[selected_template]["topic"])
 
 # Role Configuration
 st.subheader("Role Configuration")
-role_name = st.text_input("Role Name", "Custom Role")
-role_title = st.text_input("Role Title", "Custom Role Title")
-role_goal = st.text_area("Role Goal", "Define the goal for this role")
-role_backstory = st.text_area("Role Backstory", "Provide a backstory for this role")
+role_name = st.text_input("Role Name", value=templates[selected_template]["role_name"])
+role_title = st.text_input("Role Title", value=templates[selected_template]["role_title"])
+role_goal = st.text_area("Role Goal", value=templates[selected_template]["role_goal"])
+role_backstory = st.text_area("Role Backstory", value=templates[selected_template]["role_backstory"])
 
 # Task Configuration
 st.subheader("Task Configuration")
-task_name = st.text_input("Task Name", "custom_task")
-task_description = st.text_area("Task Description", "Describe the task to be performed")
-task_expected_output = st.text_area("Expected Output", "Describe the expected output of the task")
+task_name = st.text_input("Task Name", value=templates[selected_template]["task_name"])
+task_description = st.text_area("Task Description", value=templates[selected_template]["task_description"])
+task_expected_output = st.text_area("Expected Output", value=templates[selected_template]["task_expected_output"])
 
 # Tool Selection
 available_tools = ["InternetSearchTool"]
-selected_tools = st.multiselect("Select Tools", available_tools)
+selected_tools = st.multiselect("Select Tools", available_tools, default=templates[selected_template]["tools"])
 
 def run_agent_with_timeout(agent_yaml, timeout=300):
     def run_agent():
@@ -149,10 +189,11 @@ if st.button("Generate Agent and Run"):
 st.sidebar.markdown("## About")
 st.sidebar.markdown("This app allows you to create and run custom PraisonAI agents.")
 st.sidebar.markdown("1. Enter your OpenAI API Key")
-st.sidebar.markdown("2. Configure your agent by filling out the forms")
-st.sidebar.markdown("3. Click 'Generate Agent and Run' to create and execute your custom agent")
-st.sidebar.markdown("4. View the generated YAML configuration and agent output")
-st.sidebar.markdown("5. Download the configuration and output as needed")
+st.sidebar.markdown("2. Select a template or create a custom configuration")
+st.sidebar.markdown("3. Modify the configuration as needed")
+st.sidebar.markdown("4. Click 'Generate Agent and Run' to create and execute your agent")
+st.sidebar.markdown("5. View the generated YAML configuration and agent output")
+st.sidebar.markdown("6. Download the configuration and output as needed")
 
 # Display logs in the Streamlit app
 if st.checkbox("Show logs"):
