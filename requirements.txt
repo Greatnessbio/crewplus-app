@@ -1,5 +1,5 @@
 streamlit 
-praisonai 
+-Uq praisonai
 duckduckgo_search 
 pyyaml
 pysqlite3-binary
