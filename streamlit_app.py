@@ -5,10 +5,16 @@ from praisonai import PraisonAI
 from praisonai_tools import BaseTool
 from duckduckgo_search import DDGS
 import logging
+import io
 
 # Configure logging
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
+
+# Create a string IO object to capture log messages
+log_stream = io.StringIO()
+handler = logging.StreamHandler(log_stream)
+logger.addHandler(handler)
 
 class InternetSearchTool(BaseTool):
     name: str = "InternetSearchTool"
@@ -68,7 +74,7 @@ if st.button("Run PraisonAI"):
 
 # Display logs in the Streamlit app
 if st.checkbox("Show logs"):
-    st.text_area("Logs", value="\n".join(logger.handlers[0].buffer), height=300)
+    st.text_area("Logs", value=log_stream.getvalue(), height=300)
 
 # Display PraisonAI version
 import praisonai
