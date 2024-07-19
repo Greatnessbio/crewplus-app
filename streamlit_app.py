@@ -1,6 +1,7 @@
 import streamlit as st
 import os
 import yaml
+import traceback
 from praisonai import PraisonAI
 from duckduckgo_search import DDGS
 from praisonai_tools import BaseTool
@@ -51,11 +52,29 @@ if st.button("Run PraisonAI"):
         try:
             with st.spinner("Running PraisonAI... This may take a few minutes."):
                 praisonai = PraisonAI(agent_yaml=agent_yaml)
+                st.write("Agent created successfully. Starting execution...")
                 result = praisonai.run()
+                st.write("Agent execution completed.")
+            
             st.subheader("Agent Output")
-            st.write(result)
+            if result:
+                st.write(result)
+            else:
+                st.warning("The agent did not produce any output. This might be due to an error in execution or an issue with the configuration.")
+                st.write("Debug Information:")
+                st.write(f"Agent YAML:\n{agent_yaml}")
+                st.write("Please check the logs for more information.")
         except Exception as e:
             st.error(f"An error occurred: {str(e)}")
+            st.write("Detailed error information:")
+            st.code(traceback.format_exc())
 
 if st.checkbox("Show logs"):
     st.text_area("Logs", value="INFO:__main__:Current SQLite version: 3.46.0\nINFO:__main__:Using SQLite version: 3.46.0", height=300)
+
+# Add a section to display PraisonAI version
+try:
+    import praisonai
+    st.sidebar.write(f"PraisonAI Version: {praisonai.__version__}")
+except Exception as e:
+    st.sidebar.write("Unable to determine PraisonAI version")
