@@ -1,9 +1,32 @@
 import streamlit as st
 import os
 import yaml
-from praisonai import PraisonAI
-from duckduckgo_search import DDGS
-from praisonai_tools import BaseTool
+import sys
+
+def setup_sqlite():
+    try:
+        import sqlite3
+        print(f"Current SQLite version: {sqlite3.sqlite_version}")
+        if sqlite3.sqlite_version_info < (3, 35, 0):
+            print("SQLite version is older than 3.35.0. Attempting to use pysqlite3.")
+            __import__('pysqlite3')
+            sys.modules['sqlite3'] = sys.modules.pop('pysqlite3')
+        print(f"Using SQLite version: {sqlite3.sqlite_version}")
+    except ImportError:
+        print("Failed to import pysqlite3. Please install it using: pip install pysqlite3-binary")
+        st.error("There was an issue with the SQLite configuration. Please contact the app administrator.")
+        st.stop()
+
+setup_sqlite()
+
+try:
+    from praisonai import PraisonAI
+    from duckduckgo_search import DDGS
+    from praisonai_tools import BaseTool
+except ImportError as e:
+    st.error(f"Failed to import required modules: {str(e)}")
+    st.error("Please make sure all required packages are installed.")
+    st.stop()
 
 class InternetSearchTool(BaseTool):
     name: str = "InternetSearchTool"
@@ -20,7 +43,7 @@ openai_api_key = st.text_input("Enter your OpenAI API Key", type="password")
 
 # Agent Configuration
 st.header("Agent Configuration")
-framework = st.selectbox("Framework", ["crewai", "other_framework"])  # Add more frameworks as needed
+framework = st.selectbox("Framework", ["crewai", "other_framework"])
 topic = st.text_input("Topic", "Custom Agent Topic")
 
 # Role Configuration
@@ -37,7 +60,7 @@ task_description = st.text_area("Task Description", "Describe the task to be per
 task_expected_output = st.text_area("Expected Output", "Describe the expected output of the task")
 
 # Tool Selection
-available_tools = ["InternetSearchTool"]  # Add more tools as they become available
+available_tools = ["InternetSearchTool"]
 selected_tools = st.multiselect("Select Tools", available_tools)
 
 if st.button("Generate Agent and Run"):
@@ -65,30 +88,31 @@ if st.button("Generate Agent and Run"):
         st.subheader("Generated YAML Configuration")
         st.code(agent_yaml, language="yaml")
         
-        with st.spinner("Running agent... This may take a few minutes."):
-            try:
+        try:
+            with st.spinner("Running agent... This may take a few minutes."):
                 praisonai = PraisonAI(agent_yaml=agent_yaml)
                 result = praisonai.run()
                 
-                st.subheader("Agent Output")
-                st.markdown(result)
-                
-                # Download buttons
-                st.download_button(
-                    label="Download YAML Configuration",
-                    data=agent_yaml,
-                    file_name="agent_configuration.yaml",
-                    mime="application/x-yaml"
-                )
-                
-                st.download_button(
-                    label="Download Agent Output",
-                    data=result,
-                    file_name="agent_output.md",
-                    mime="text/markdown"
-                )
-            except Exception as e:
-                st.error(f"An error occurred while running the agent: {str(e)}")
+            st.subheader("Agent Output")
+            st.markdown(result)
+            
+            # Download buttons
+            st.download_button(
+                label="Download YAML Configuration",
+                data=agent_yaml,
+                file_name="agent_configuration.yaml",
+                mime="application/x-yaml"
+            )
+            
+            st.download_button(
+                label="Download Agent Output",
+                data=result,
+                file_name="agent_output.md",
+                mime="text/markdown"
+            )
+        except Exception as e:
+            st.error(f"An error occurred while running the agent: {str(e)}")
+            st.error("If the error persists, please check your configuration and try again.")
 
 st.sidebar.markdown("## About")
 st.sidebar.markdown("This app allows you to create and run custom PraisonAI agents.")
